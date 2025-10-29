@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tienda Ropa - Mini Ecommerce</title>
+
+  <!-- Google font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- jsPDF CDN para generar PDF cliente -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">MiTiendaRopa</div>
+    <nav>
+      <a href="#home">Inicio</a>
+      <a href="#productos">Productos</a>
+      <a href="#nosotros">Nosotros</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <div class="cart-btn" id="cartBtn">
+      🛒 <span id="cartCount">0</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section id="home" class="hero">
+      <h1>Bienvenido a Nybar</h1>
+      <p>Ropa de calidad — Compra fácil y recibe tu voucher instantáneo.</p>
+    </section>
+
+    <!-- Productos -->
+    <section id="productos" class="productos-section">
+      <h2>Nuestros Productos</h2>
+
+      <!-- Filtros (botones con estilo .btn) -->
+      <div id="categoryFilters" class="filter-buttons" aria-hidden="false">
+        <button class="btn primary active" data-category="Todos">Todos</button>
+        <button class="btn outline" data-category="Hombre">Hombre</button>
+        <button class="btn outline" data-category="Mujer">Mujer</button>
+      </div>
+
+      <div class="productos-grid" id="productGrid">
+        <!-- Las tarjetas se inyectan por JS -->
+      </div>
+    </section>
+
+    <!-- Carrito modal -->
+    <div class="modal" id="cartModal" aria-hidden="true">
+      <div class="modal-content">
+        <button class="close" id="closeCart">✖</button>
+        <h3>Tu carrito</h3>
+        <div id="cartItems"></div>
+        <div class="cart-footer">
+          <div>Total: <strong id="cartTotal">S/ 0.00</strong></div>
+          <div>
+            <button id="clearCart" class="btn outline">Vaciar</button>
+            <button id="checkoutBtn" class="btn primary">Confirmar compra</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal detalle producto (mejorado) -->
+    <div class="modal" id="productModal" aria-hidden="true">
+      <div class="modal-content product-modal-content">
+        <button class="close" id="closeProduct">✖</button>
+        <div class="product-detail-extended">
+          <div class="left">
+            <img id="detailImg" src="" alt="Producto" />
+          </div>
+          <div class="right">
+            <h3 id="detailName"></h3>
+            <div class="price" id="detailPrice"></div>
+            <p id="detailDesc" class="extended-desc"></p>
+            <p id="detailLong" class="long-desc"></p>
+            <label style="display:block;margin-top:8px">
+              Cantidad:
+              <input type="number" id="detailQty" min="1" value="1" style="width:80px;margin-left:6px;padding:6px;border-radius:6px;border:1px solid #ddd" />
+            </label>
+
+            <div style="margin-top:14px; display:flex; gap:8px; align-items:center">
+              <button id="addToCartFromDetail" class="btn primary">Agregar al carrito</button>
+              <button id="closeDetailBtn" class="btn outline">Cerrar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nosotros -->
+    <section id="nosotros" class="about">
+      <h2>Sobre Nosotros</h2>
+      <p>Bienvenido a Nybar, tu nueva tienda de ropa favorita. <br>
+        <br>
+        En Nybar, nos apasiona ofrecerte las mejores opciones para que puedas expresar tu estilo único. Sabemos que cada persona tiene su propio ritmo y personalidad, por eso contamos con una variedad de prendas que combinan las últimas tendencias con comodidad y autenticidad. <br>
+        <br>
+        Nuestra misión es simple: brindarte ropa de calidad, con diseños modernos y atemporales, para que te sientas seguro/a, cómodo/a y, sobre todo, auténtico/a. Cada pieza en nuestra tienda ha sido seleccionada con cuidado, pensando en ti y en lo que buscas para destacar tu esencia.<br>
+        <br>
+        Ya sea que estés buscando un look casual para el día a día o algo especial para una ocasión única, en Nybar encontrarás opciones para todos los gustos y momentos. Porque para nosotros, la moda no es solo lo que vistes, sino cómo te sientes cuando lo usas.<br>
+        <br>
+        Gracias por elegirnos. ¡Explora, encuentra y lleva tu estilo a otro nivel con Nybar! </p>
+    </section>
+
+    <!-- Contacto -->
+    <section id="contacto" class="contact">
+      <h2>Contacto</h2>
+      <form id="contactForm">
+        <input type="text" id="name" placeholder="Nombre" required />
+        <input type="email" id="email" placeholder="Email" required />
+        <textarea id="message" placeholder="Tu mensaje..." rows="4" required></textarea>
+        <button type="submit" class="btn primary">Enviar</button>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2025 Nybar Productions. Todos los derechos reservados.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
