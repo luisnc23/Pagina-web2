@@ -241,3 +241,104 @@ body{
     width: 100%;
   }
 }
+
+/* === ESTILOS PÁGINA DETALLE (producto.html) === */
+.detail-page-container {
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.product-detail-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.detail-image-box img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.detail-info-box h1 {
+  font-size: 28px;
+  margin: 0 0 10px 0;
+  color: #222;
+}
+
+.detail-brand {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #888;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.detail-price {
+  font-size: 26px;
+  color: var(--primary);
+  font-weight: 700;
+  margin: 15px 0;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.detail-description {
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+/* Selector de Tallas */
+.size-selector {
+  margin-bottom: 20px;
+}
+.size-selector label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.size-options {
+  display: flex;
+  gap: 10px;
+}
+.size-radio {
+  display: none; /* Ocultamos el radio button real */
+}
+.size-box {
+  border: 1px solid #ddd;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.size-radio:checked + .size-box {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* Controles de compra */
+.purchase-controls {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+.qty-input {
+  width: 70px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .product-detail-layout {
+    grid-template-columns: 1fr;
+  }
+}
