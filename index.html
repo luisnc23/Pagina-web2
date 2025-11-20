@@ -27,6 +27,7 @@
     </div>
   </header>
 
+  
   <main>
     <!-- Hero -->
     <section id="home" class="hero">
@@ -37,17 +38,41 @@
     <!-- Productos -->
     <section id="productos" class="productos-section">
       <h2>Nuestros Productos</h2>
+      <div class="layout">
 
-      <!-- Filtros (botones con estilo .btn) -->
-      <div id="categoryFilters" class="filter-buttons" aria-hidden="false">
-        <button class="btn primary active" data-category="Todos">Todos</button>
-        <button class="btn outline" data-category="Hombre">Hombre</button>
-        <button class="btn outline" data-category="Mujer">Mujer</button>
-      </div>
+   <!-- PANEL LATERAL FILTROS -->
+    <aside id="leftFilters">
+    <h3 class="filter-title-main">Filtros</h3>
 
-      <div class="productos-grid" id="productGrid">
-        <!-- Las tarjetas se inyectan por JS -->
-      </div>
+    <div class="filter-box">
+    <h4 class="filter-title">Precio</h4>
+    <label><input type="radio" name="priceFilter" value="asc"> Menor a mayor</label>
+    <label><input type="radio" name="priceFilter" value="desc"> Mayor a menor</label>
+    </div>
+
+    <div class="filter-box">
+    <h4 class="filter-title">Género</h4>
+    <label><input type="checkbox" class="genderFilter" value="Hombre"> Hombre</label>
+    <label><input type="checkbox" class="genderFilter" value="Mujer"> Mujer</label>
+    </div>
+
+    <div class="filter-box">
+    <h4 class="filter-title">Marca</h4>
+    <label><input type="checkbox" class="brandFilter" value="Nike"> Nike</label>
+    <label><input type="checkbox" class="brandFilter" value="Zara"> Zara</label>
+    <label><input type="checkbox" class="brandFilter" value="Overtake"> Overtake</label>
+    </div>
+
+    <button id="applyFilters" class="btn primary" style="width:100%; margin-top:10px;">
+    Aplicar filtros
+    </button>
+    </aside>
+
+  <!-- GRID PRODUCTOS -->
+  <div class="productos-grid" id="productGrid"></div>
+
+</div>
+
     </section>
 
     <!-- Carrito modal -->
