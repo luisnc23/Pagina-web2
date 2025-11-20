@@ -180,3 +180,64 @@ body{
 @media (max-width:700px){
   .modal-content{padding:12px}
 }
+
+/* ===========================
+   LAYOUT DE 2 COLUMNAS
+=========================== */
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ===========================
+   PANEL LATERAL IZQUIERDO
+=========================== */
+#leftFilters {
+  background: #ffffff;
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  position: relative; /* YA NO FLOTANTE */
+}
+
+.filter-title-main {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: var(--primary);
+}
+
+.filter-box {
+  background: #fafafa;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #eee;
+  margin-bottom: 18px;
+}
+
+.filter-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--primary);
+}
+
+.filter-box label {
+  display: block;
+  font-size: 14px;
+  margin: 6px 0;
+}
+
+
+/* RESPONSIVE */
+@media (max-width: 800px){
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  #leftFilters {
+    position: relative;
+    width: 100%;
+  }
+}
