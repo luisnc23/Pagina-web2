@@ -149,137 +149,166 @@
      brand: "Nike" 
     }
   ];
-
-  // =========================
-  // 2. REFERENCIAS AL DOM
-  // =========================
-  const productGrid = document.getElementById('productGrid');
   
-  // Carrito
-  const cartBtn = document.getElementById('cartBtn');
+ // =========================
+  // 2. VARIABLES GLOBALES DEL CARRITO
+  // =========================
+  let cart = JSON.parse(localStorage.getItem('miCarrito_v1')) || [];
   const cartCount = document.getElementById('cartCount');
   const cartModal = document.getElementById('cartModal');
-  const closeCart = document.getElementById('closeCart');
   const cartItemsDiv = document.getElementById('cartItems');
   const cartTotalEl = document.getElementById('cartTotal');
-  const clearCartBtn = document.getElementById('clearCart');
+
+  // =========================
+  // 3. LÓGICA PARA DETECTAR PÁGINA
+  // =========================
+  const path = window.location.pathname;
+  const isProductPage = path.includes('producto.html');
+  const isIndexPage = !isProductPage; // Asumimos que si no es producto, es index
+
+  // =========================
+  // 4. RENDERIZADO DE INICIO (Solo si estamos en index.html)
+  // =========================
+  if (isIndexPage) {
+    const productGrid = document.getElementById('productGrid');
+    const applyFiltersBtn = document.getElementById('applyFilters');
+
+    // Render inicial
+    if(productGrid) renderProducts(products);
+
+    function renderProducts(list) {
+      productGrid.innerHTML = '';
+      if (list.length === 0) {
+        productGrid.innerHTML = '<p>No hay productos.</p>';
+        return;
+      }
+      list.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        // NOTA: El botón VER ahora es un enlace <a href="producto.html?id=...">
+        card.innerHTML = `
+          <img src="${p.img}" alt="${p.name}" loading="lazy" />
+          <div style="font-size:11px; color:#999; font-weight:700; text-transform:uppercase;">${p.brand}</div>
+          <h4>${p.name}</h4>
+          <div class="price">S/ ${p.price.toFixed(2)}</div>
+          <div style="display:flex;justify-content:center;gap:8px;margin-top:8px">
+            <a href="producto.html?id=${p.id}" class="btn outline">Ver</a>
+            <button class="btn primary addBtn" data-id="${p.id}">Agregar</button>
+          </div>
+        `;
+        productGrid.appendChild(card);
+      });
+
+      document.querySelectorAll('.addBtn').forEach(btn => {
+        btn.addEventListener('click', e => addToCart(Number(e.target.dataset.id), 1));
+      });
+    }
+
+    // Lógica de Filtros (Solo en index)
+    if(applyFiltersBtn) {
+      applyFiltersBtn.addEventListener('click', () => {
+        const priceOption = document.querySelector("input[name='priceFilter']:checked");
+        const selectedGenders = Array.from(document.querySelectorAll(".genderFilter:checked")).map(cb => cb.value);
+        const selectedBrands = Array.from(document.querySelectorAll(".brandFilter:checked")).map(cb => cb.value);
+
+        let filtered = products.slice();
+        if (selectedGenders.length > 0) filtered = filtered.filter(p => selectedGenders.includes(p.category));
+        if (selectedBrands.length > 0) filtered = filtered.filter(p => selectedBrands.includes(p.brand));
+        if (priceOption) {
+          filtered.sort((a, b) => priceOption.value === 'asc' ? a.price - b.price : b.price - a.price);
+        }
+        renderProducts(filtered);
+      });
+    }
+  }
+
+  // =========================
+  // 5. RENDERIZADO DE DETALLE (Solo si estamos en producto.html)
+  // =========================
+  if (isProductPage) {
+    const params = new URLSearchParams(window.location.search);
+    const prodId = Number(params.get('id'));
+    const container = document.getElementById('productDetailContainer');
+    
+    const product = products.find(p => p.id === prodId);
+
+    if (product && container) {
+      document.title = `${product.name} - Nybar`; // Cambiar título pestaña
+      
+      container.innerHTML = `
+        <div class="detail-image-box">
+          <img src="${product.img}" alt="${product.name}">
+        </div>
+        <div class="detail-info-box">
+          <div class="detail-brand">${product.brand} / ${product.category}</div>
+          <h1>${product.name}</h1>
+          <div class="detail-price">S/ ${product.price.toFixed(2)}</div>
+          
+          <p class="detail-description">
+            ${product.extendedDesc || product.desc}
+          </p>
+
+          <div class="size-selector">
+            <label>Elige tu talla:</label>
+            <div class="size-options">
+              <label>
+                <input type="radio" name="size" value="S" class="size-radio" checked>
+                <span class="size-box">S</span>
+              </label>
+              <label>
+                <input type="radio" name="size" value="M" class="size-radio">
+                <span class="size-box">M</span>
+              </label>
+              <label>
+                <input type="radio" name="size" value="L" class="size-radio">
+                <span class="size-box">L</span>
+              </label>
+              <label>
+                <input type="radio" name="size" value="XL" class="size-radio">
+                <span class="size-box">XL</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="purchase-controls">
+            <input type="number" id="detailQty" class="qty-input" value="1" min="1">
+            <button id="addToCartDetailBtn" class="btn primary" style="flex:1; padding:14px;">
+              AÑADIR AL CARRITO
+            </button>
+          </div>
+        </div>
+      `;
+
+      // Listener para el botón de añadir en la página de detalle
+      document.getElementById('addToCartDetailBtn').addEventListener('click', () => {
+        const qty = Number(document.getElementById('detailQty').value) || 1;
+        const size = document.querySelector('input[name="size"]:checked').value;
+        
+        // Nota: Para este ejemplo simple, no estamos guardando la talla en la lógica del carrito
+        // para no romper la compatibilidad con el index. Pero visualmente el usuario la elige.
+        addToCart(product.id, qty);
+        
+        alert(`¡Agregado! Talla: ${size}`);
+      });
+
+    } else {
+      if(container) container.innerHTML = '<h2>Producto no encontrado</h2><a href="index.html" class="btn primary">Volver</a>';
+    }
+  }
+
+  // =========================
+  // 6. LÓGICA GLOBAL DEL CARRITO (Funciona en ambas páginas)
+  // =========================
+  const cartBtn = document.getElementById('cartBtn');
+  const closeCart = document.getElementById('closeCart');
   const checkoutBtn = document.getElementById('checkoutBtn');
-
-  // Modal Producto Detalle
-  const productModal = document.getElementById('productModal');
-  const closeProduct = document.getElementById('closeProduct');
-  const detailImg = document.getElementById('detailImg');
-  const detailName = document.getElementById('detailName');
-  const detailDesc = document.getElementById('detailDesc');
-  const detailLong = document.getElementById('detailLong');
-  const detailPrice = document.getElementById('detailPrice');
-  const detailQty = document.getElementById('detailQty');
-  const addToCartFromDetail = document.getElementById('addToCartFromDetail');
-  const closeDetailBtn = document.getElementById('closeDetailBtn');
-
-  // Botón Filtros
-  const applyFiltersBtn = document.getElementById('applyFilters');
-
-  // Estado del Carrito
-  let cart = JSON.parse(localStorage.getItem('miCarrito_v1')) || [];
-
-  // =========================
-  // 3. FUNCIONES PRINCIPALES
-  // =========================
+  const clearCartBtn = document.getElementById('clearCart');
 
   function saveCart(){
     localStorage.setItem('miCarrito_v1', JSON.stringify(cart));
     renderCartCount();
   }
 
-  // RENDER PRODUCTOS
-  function renderProducts(listToRender = null){
-    productGrid.innerHTML = '';
-
-    // Si no se pasa lista, usar todos los productos
-    const finalData = listToRender || products;
-
-    if (finalData.length === 0){
-      productGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:20px;">No hay productos que coincidan con los filtros.</p>';
-      return;
-    }
-
-    finalData.forEach(p => {
-      const card = document.createElement('div');
-      card.className = 'card'; 
-      
-      // Añadimos una pequeña etiqueta de marca visualmente
-      card.innerHTML = `
-        <img src="${p.img}" alt="${p.name}" loading="lazy" />
-        <div style="font-size:11px; color:#999; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; font-weight:700;">${p.brand}</div>
-        <h4>${p.name}</h4>
-        <div class="price">S/ ${p.price.toFixed(2)}</div>
-        <div style="display:flex;justify-content:center;gap:8px;margin-top:8px">
-          <button class="btn outline previewBtn" data-id="${p.id}">Ver</button>
-          <button class="btn primary addBtn" data-id="${p.id}">Agregar</button>
-        </div>
-      `;
-      productGrid.appendChild(card);
-    });
-
-    // Listeners botones
-    document.querySelectorAll('.addBtn').forEach(btn => {
-      btn.addEventListener('click', e => addToCart(Number(e.currentTarget.dataset.id), 1));
-    });
-
-    document.querySelectorAll('.previewBtn').forEach(btn => {
-      btn.addEventListener('click', e => openProductDetail(Number(e.currentTarget.dataset.id)));
-    });
-  }
-
-  // =========================
-  // 4. LÓGICA DE FILTROS (PRECIO, GÉNERO Y MARCA)
-  // =========================
-  if(applyFiltersBtn) {
-    applyFiltersBtn.addEventListener('click', () => {
-      
-      // 1. Obtener valores de los inputs
-      const priceOption = document.querySelector("input[name='priceFilter']:checked");
-      
-      // Géneros seleccionados
-      const genderCheckboxes = document.querySelectorAll(".genderFilter:checked");
-      const selectedGenders = Array.from(genderCheckboxes).map(cb => cb.value);
-
-      // Marcas seleccionadas (NUEVO)
-      const brandCheckboxes = document.querySelectorAll(".brandFilter:checked");
-      const selectedBrands = Array.from(brandCheckboxes).map(cb => cb.value);
-
-      // 2. Empezar con copia de todos los productos
-      let filtered = products.slice();
-
-      // 3. Filtrar por GÉNERO
-      if (selectedGenders.length > 0) {
-        filtered = filtered.filter(p => selectedGenders.includes(p.category));
-      }
-
-      // 4. Filtrar por MARCA (NUEVO)
-      if (selectedBrands.length > 0) {
-        filtered = filtered.filter(p => selectedBrands.includes(p.brand));
-      }
-
-      // 5. Ordenar por PRECIO
-      if (priceOption) {
-        const sortOrder = priceOption.value;
-        filtered.sort((a, b) => {
-          if (sortOrder === 'asc') return a.price - b.price;
-          if (sortOrder === 'desc') return b.price - a.price;
-          return 0;
-        });
-      }
-
-      // 6. Renderizar resultado
-      renderProducts(filtered);
-    });
-  }
-
-  // =========================
-  // 5. LÓGICA DEL CARRITO
-  // =========================
   function addToCart(id, qty=1){
     const item = cart.find(c => c.id === id);
     if(item) item.qty += qty;
@@ -288,214 +317,101 @@
       if(p) cart.push({ id: p.id, qty });
     }
     saveCart();
-  }
-
-  function removeFromCart(id){
-    cart = cart.filter(c => c.id !== id);
-    saveCart();
+    // Abrir carrito automáticamente al agregar
+    cartModal.style.display = 'flex';
+    cartModal.setAttribute('aria-hidden', 'false');
     renderCart();
-  }
-
-  function changeQty(id, qty){
-    const item = cart.find(c => c.id === id);
-    if(!item) return;
-    item.qty = qty;
-    if(item.qty <= 0) removeFromCart(id);
-    else {
-      saveCart();
-      renderCart();
-    }
   }
 
   function renderCartCount(){
-    const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
-    cartCount.textContent = totalCount;
+    const total = cart.reduce((s,i)=>s+i.qty,0);
+    if(cartCount) cartCount.textContent = total;
   }
 
   function renderCart(){
+    if(!cartItemsDiv) return;
     cartItemsDiv.innerHTML = '';
-    if(cart.length === 0){
-      cartItemsDiv.innerHTML = '<p style="text-align:center;color:#666;">El carrito está vacío.</p>';
+    let total = 0;
+
+    if(cart.length === 0) {
+      cartItemsDiv.innerHTML = '<p>Carrito vacío</p>';
       cartTotalEl.textContent = 'S/ 0.00';
       return;
     }
-    
-    let total = 0;
+
     cart.forEach(ci => {
       const p = products.find(x => x.id === ci.id);
       if(!p) return;
-
-      const line = document.createElement('div');
-      line.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #eee;';
-      
-      line.innerHTML = `
-        <div style="flex:1">
-          <div style="font-weight:600;">${p.name}</div>
-          <div style="font-size:12px; color:#888;">${p.brand}</div> <div style="font-size:13px;color:#666;">S/ ${p.price.toFixed(2)} x ${ci.qty}</div>
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px';
+      row.innerHTML = `
+        <div>
+          <strong>${p.name}</strong><br>
+          <small>S/ ${p.price} x ${ci.qty}</small>
         </div>
-        <div style="display:flex; gap:8px; align-items:center">
-          <input type="number" min="1" value="${ci.qty}" data-id="${ci.id}" class="qtyInput" 
-                 style="width:50px; padding:4px; border-radius:4px; border:1px solid #ddd; text-align:center;"/>
-          <button class="btn outline removeBtn" data-id="${ci.id}" style="padding:4px 8px; font-size:12px;">X</button>
+        <div>
+          <button class="btn outline removeBtn" data-id="${ci.id}">X</button>
         </div>
       `;
-      cartItemsDiv.appendChild(line);
+      cartItemsDiv.appendChild(row);
       total += p.price * ci.qty;
     });
-    cartTotalEl.textContent = `S/ ${total.toFixed(2)}`;
+    cartTotalEl.textContent = 'S/ ' + total.toFixed(2);
 
-    // Listeners del carrito
-    document.querySelectorAll('.qtyInput').forEach(inp => {
-      inp.addEventListener('change', (e) => {
-        changeQty(Number(e.target.dataset.id), Number(e.target.value));
-      });
-    });
-    document.querySelectorAll('.removeBtn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        removeFromCart(Number(e.target.dataset.id));
+    document.querySelectorAll('.removeBtn').forEach(b => {
+      b.addEventListener('click', e => {
+        cart = cart.filter(c => c.id !== Number(e.target.dataset.id));
+        saveCart();
+        renderCart();
       });
     });
   }
 
-  // Eventos del Modal Carrito
-  cartBtn.addEventListener('click', () => {
-    cartModal.setAttribute('aria-hidden','false');
-    cartModal.style.display = 'flex';
-    renderCart();
-  });
-
-  const hideCart = () => {
-    cartModal.setAttribute('aria-hidden','true');
-    cartModal.style.display = 'none';
-  };
-  closeCart.addEventListener('click', hideCart);
-  
-  clearCartBtn.addEventListener('click', () => {
-    if(confirm('¿Estás seguro de vaciar el carrito?')) {
-      cart=[]; 
-      saveCart(); 
+  // Eventos del modal Carrito
+  if(cartBtn) {
+    cartBtn.addEventListener('click', () => {
+      cartModal.style.display = 'flex';
       renderCart();
-    }
-  });
-
-  // =========================
-  // 6. CHECKOUT Y PDF
-  // =========================
-  checkoutBtn.addEventListener('click', async () => {
-    if(cart.length === 0){ alert('El carrito está vacío'); return; }
-
-    // Preparar datos orden
-    const orderId = 'ORD-' + Date.now();
-    const orderDate = new Date();
-    
-    // Preparar items
-    const itemsData = cart.map(ci => {
-      const p = products.find(x => x.id === ci.id);
-      return { 
-        name: p.name, 
-        brand: p.brand,
-        price: p.price, 
-        qty: ci.qty, 
-        subtotal: p.price * ci.qty 
-      };
     });
-    
-    const grandTotal = itemsData.reduce((acc, it) => acc + it.subtotal, 0);
-
-    // Generar PDF con jsPDF
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text('NYBAR STORE - COMPROBANTE', 14, 20);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text(`Código: ${orderId}`, 14, 30);
-    doc.text(`Fecha: ${orderDate.toLocaleString()}`, 14, 36);
-    
-    doc.line(14, 40, 196, 40); // Linea separadora
-
-    let y = 50;
-    itemsData.forEach(item => {
-      // Nombre producto y Marca
-      doc.text(`${item.name} - ${item.brand}`, 14, y);
-      doc.text(`x${item.qty}`, 160, y);
-      // Precio
-      doc.text(`S/ ${item.subtotal.toFixed(2)}`, 190, y, { align: "right" });
-      y += 8;
-    });
-
-    doc.line(14, y, 196, y);
-    y += 10;
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text(`TOTAL A PAGAR: S/ ${grandTotal.toFixed(2)}`, 190, y, { align: "right" });
-
-    doc.save(`${orderId}.pdf`);
-
-    // Limpiar y cerrar
-    cart = [];
-    saveCart();
-    hideCart();
-    alert('¡Compra realizada con éxito! Se ha descargado tu comprobante.');
-  });
-
-  // =========================
-  // 7. DETALLE DE PRODUCTO (MODAL)
-  // =========================
-  function openProductDetail(id){
-    const p = products.find(x => x.id === id);
-    if(!p) return;
-
-    detailImg.src = p.img;
-    detailName.innerHTML = `${p.name} <span style="font-size:14px;color:#888;font-weight:400">(${p.brand})</span>`;
-    detailDesc.textContent = p.desc;
-    if(detailLong) detailLong.textContent = p.extendedDesc || p.desc;
-    detailPrice.textContent = 'S/ ' + p.price.toFixed(2);
-    detailQty.value = 1;
-    addToCartFromDetail.dataset.id = id;
-
-    productModal.setAttribute('aria-hidden','false');
-    productModal.style.display = 'flex';
   }
-  // Hacer global para debugear si es necesario
-  window.openProductDetail = openProductDetail;
-
-  addToCartFromDetail.addEventListener('click', () => {
-    const id = Number(addToCartFromDetail.dataset.id);
-    const q = Number(detailQty.value) || 1;
-    addToCart(id, q);
-    productModal.setAttribute('aria-hidden','true');
-    productModal.style.display = 'none';
-    alert('Producto agregado.');
-  });
-
-  const hideProductModal = () => {
-    productModal.setAttribute('aria-hidden','true');
-    productModal.style.display = 'none';
-  };
-  closeProduct.addEventListener('click', hideProductModal);
-  if(closeDetailBtn) closeDetailBtn.addEventListener('click', hideProductModal);
-
-  // =========================
-  // 8. FORMULARIO CONTACTO
-  // =========================
-  const contactForm = document.getElementById('contactForm');
-  if(contactForm){
-    contactForm.addEventListener('submit', e => {
-      e.preventDefault();
-      alert('Mensaje enviado correctamente. ¡Gracias por contactarnos!');
-      e.target.reset();
+  if(closeCart) {
+    closeCart.addEventListener('click', () => cartModal.style.display = 'none');
+  }
+  if(clearCartBtn) {
+    clearCartBtn.addEventListener('click', () => {
+      cart = [];
+      saveCart();
+      renderCart();
+    });
+  }
+  if(checkoutBtn) {
+    checkoutBtn.addEventListener('click', () => {
+      if(cart.length === 0) return alert('Carrito vacío');
+      
+      // Generar PDF simple
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text("NYBAR - VOUCHER DE COMPRA", 10, 10);
+      let y = 20;
+      let total = 0;
+      cart.forEach(ci => {
+        const p = products.find(x => x.id === ci.id);
+        const sub = p.price * ci.qty;
+        doc.text(`${p.name} (x${ci.qty}) - S/${sub}`, 10, y);
+        total += sub;
+        y += 10;
+      });
+      doc.text(`TOTAL: S/${total}`, 10, y+10);
+      doc.save("voucher.pdf");
+      
+      cart = [];
+      saveCart();
+      renderCart();
+      cartModal.style.display = 'none';
     });
   }
 
-  // =========================
-  // INICIALIZACIÓN
-  // =========================
-  renderProducts(); // Render inicial (todos)
+  // Inicializar contador al cargar
   renderCartCount();
 
 })();
